@@ -45,7 +45,10 @@
   },
   "author": "Preston Neal",
   "license": "MIT",
-  "repository": "git+https://github.com/pwngh/money.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pwngh/money.git"
+  },
   "keywords": [
     "money",
     "minor-units",
