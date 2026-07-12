@@ -1,0 +1,13 @@
+{
+  "name": "com.pwngh.money",
+  "displayName": "Money",
+  "version": "0.3.0",
+  "unity": "2022.3",
+  "description": "Minor-unit integer money on a checked i64: the balance fold reimplemented for Udon, which loads no WebAssembly. Pinned to @pwngh/money's fold conformance vectors; zero dependencies.",
+  "author": {
+    "name": "Preston Neal",
+    "url": "https://github.com/pwngh/money"
+  },
+  "license": "MIT",
+  "keywords": ["money", "minor-units", "i64", "fold", "udon", "conformance"]
+}
