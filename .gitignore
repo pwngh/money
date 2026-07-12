@@ -1,0 +1,12 @@
+node_modules/
+dist/
+out/
+*.tgz
+.DS_Store
+.idea/
+
+# C# carrier build output (carriers/csharp)
+bin/
+obj/
+*.user
+.vs/

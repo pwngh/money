@@ -1,0 +1,66 @@
+{
+  "name": "@pwngh/money",
+  "version": "0.3.0",
+  "description": "Minor-unit integer money on checked i64: ISO 4217 exponents, parse, format, five rounding modes, exact allocation, rational conversion, a canonical wire codec, an embedded property prover, and an opt-in WebAssembly fold. Two single-file amalgamations, zero dependencies, conformance vectors embedded.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/money.ts",
+      "default": "./dist/money.js"
+    },
+    "./fold": {
+      "types": "./src/fold.ts",
+      "default": "./dist/fold.js"
+    },
+    "./db": {
+      "types": "./src/db.ts",
+      "default": "./dist/db.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "dist",
+    "scripts",
+    "money-spec.md",
+    "LICENSE.md",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "pretest": "npm run build",
+    "prepack": "npm run build",
+    "test": "node --expose-gc --test \"test/**/*.test.ts\"",
+    "emit": "node scripts/emit.ts",
+    "bench": "node scripts/fold.bench.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format:check": "prettier -c \"src/**/*.ts\" \"test/**/*.ts\" \"scripts/**/*.ts\"",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm test"
+  },
+  "author": "Preston Neal",
+  "license": "MIT",
+  "repository": "git+https://github.com/pwngh/money.git",
+  "keywords": [
+    "money",
+    "minor-units",
+    "bigint",
+    "i64",
+    "allocation",
+    "idempotency",
+    "wasm",
+    "conformance"
+  ],
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.1.1",
+    "eslint": "^10.7.0",
+    "prettier": "^3.9.5",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.63.0"
+  }
+}
