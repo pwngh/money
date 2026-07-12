@@ -27,10 +27,14 @@
     "README.md"
   ],
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "pretest": "npm run build",
     "prepack": "npm run build",
+    "prepublishOnly": "npm run check",
     "test": "node --expose-gc --test \"test/**/*.test.ts\"",
     "emit": "node scripts/emit.ts",
     "bench": "node scripts/fold.bench.ts",
