@@ -25,13 +25,15 @@ const count = Number(process.argv[2] ?? 1_000_000);
 const values = new BigInt64Array(count);
 let seed = 88172645463325252n;
 for (let i = 0; i < count; i += 1) {
-  seed = (seed * 6364136223846793005n + 1442695040888963407n) & 0xffffffffffffffffn;
+  seed =
+    (seed * 6364136223846793005n + 1442695040888963407n) & 0xffffffffffffffffn;
   values[i] = BigInt.asIntN(64, seed) >> 20n;
 }
 
 const folder = createFold();
 const want = foldRef(values);
-if (folder.fold(values) !== want) throw new Error('parity failure: wasm !== ref');
+if (folder.fold(values) !== want)
+  throw new Error('parity failure: wasm !== ref');
 
 function floorOf(run: () => bigint): number {
   for (let i = 0; i < 3; i += 1) run();
@@ -51,8 +53,16 @@ const column = folder.view(count);
 column.set(values);
 const zeroCopy = floorOf(() => folder.fold(column));
 
-console.log(`fold floor, ${count} i64 elements, best of 7 warmed runs, this machine only`);
+console.log(
+  `fold floor, ${count} i64 elements, best of 7 warmed runs, this machine only`,
+);
 console.log(`  ${process.version}, ${cpus()[0]?.model ?? 'unknown cpu'}`);
-console.log(`  ref  (bigint):          ${ref.toLocaleString('en-US')} elements/s`);
-console.log(`  wasm (i64, copy-in):    ${wasm.toLocaleString('en-US')} elements/s`);
-console.log(`  wasm (i64, zero-copy):  ${zeroCopy.toLocaleString('en-US')} elements/s`);
+console.log(
+  `  ref  (bigint):          ${ref.toLocaleString('en-US')} elements/s`,
+);
+console.log(
+  `  wasm (i64, copy-in):    ${wasm.toLocaleString('en-US')} elements/s`,
+);
+console.log(
+  `  wasm (i64, zero-copy):  ${zeroCopy.toLocaleString('en-US')} elements/s`,
+);

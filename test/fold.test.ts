@@ -24,19 +24,23 @@ test('module assembly is deterministic and 125 bytes, as documented', () => {
 
 const gc = (globalThis as { gc?: () => void }).gc;
 
-test('the zero-copy fold allocates nothing per call', { skip: gc === undefined }, () => {
-  const folder = createFold();
-  const count = 1 << 16;
-  const column = folder.view(count);
-  column.fill(1n);
-  gc?.();
-  const before = process.memoryUsage().heapUsed;
-  let total = 0n;
-  for (let i = 0; i < 200; i += 1) {
-    total += folder.fold(column);
-  }
-  gc?.();
-  const grown = process.memoryUsage().heapUsed - before;
-  assert.equal(total, 200n * BigInt(count));
-  assert.ok(grown < 4_000_000, `heap grew ${grown} bytes over 200 folds`);
-});
+test(
+  'the zero-copy fold allocates nothing per call',
+  { skip: gc === undefined },
+  () => {
+    const folder = createFold();
+    const count = 1 << 16;
+    const column = folder.view(count);
+    column.fill(1n);
+    gc?.();
+    const before = process.memoryUsage().heapUsed;
+    let total = 0n;
+    for (let i = 0; i < 200; i += 1) {
+      total += folder.fold(column);
+    }
+    gc?.();
+    const grown = process.memoryUsage().heapUsed - before;
+    assert.equal(total, 200n * BigInt(count));
+    assert.ok(grown < 4_000_000, `heap grew ${grown} bytes over 200 folds`);
+  },
+);

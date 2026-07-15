@@ -26,7 +26,8 @@ const src = new URL('../src', import.meta.url).pathname;
 
 test('every src file is a zero-import amalgamation', () => {
   for (const name of readdirSync(src)) {
-    const imports = readFileSync(join(src, name), 'utf8').match(/^import /gm) ?? [];
+    const imports =
+      readFileSync(join(src, name), 'utf8').match(/^import /gm) ?? [];
     assert.equal(
       imports.length,
       0,
@@ -37,8 +38,15 @@ test('every src file is a zero-import amalgamation', () => {
 
 test('the self-verifying entries export their drift guard', async () => {
   for (const entry of ['../src/money.ts', '../src/fold.ts']) {
-    const module = (await import(entry)) as { selfTest?: unknown; vectors?: unknown };
-    assert.equal(typeof module.selfTest, 'function', `${entry} must export selfTest`);
+    const module = (await import(entry)) as {
+      selfTest?: unknown;
+      vectors?: unknown;
+    };
+    assert.equal(
+      typeof module.selfTest,
+      'function',
+      `${entry} must export selfTest`,
+    );
     assert.ok(Array.isArray(module.vectors), `${entry} must export vectors`);
   }
 });

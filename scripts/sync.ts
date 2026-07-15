@@ -46,9 +46,13 @@ for (const [source, target] of targets) {
   }
   copyFileSync(from, to);
   if (readFileSync(from, 'utf8') !== readFileSync(to, 'utf8')) {
-    throw new Error(`sync verify failed: ${target} is not byte-identical after copy`);
+    throw new Error(
+      `sync verify failed: ${target} is not byte-identical after copy`,
+    );
   }
   synced += 1;
   console.log(`synced: ${target}`);
 }
-console.log(`${synced} synced, ${skipped} skipped — run each consumer's check to re-prove.`);
+console.log(
+  `${synced} synced, ${skipped} skipped — run each consumer's check to re-prove.`,
+);

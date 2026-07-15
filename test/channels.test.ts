@@ -36,7 +36,10 @@ test('the exports map resolves on disk for both conditions', () => {
   for (const [entry, target] of Object.entries(pkg.exports)) {
     const paths = typeof target === 'string' ? [target] : Object.values(target);
     for (const path of paths) {
-      assert.ok(existsSync(join(root, path)), `exports['${entry}'] -> ${path} is missing`);
+      assert.ok(
+        existsSync(join(root, path)),
+        `exports['${entry}'] -> ${path} is missing`,
+      );
     }
   }
 });
@@ -77,11 +80,20 @@ test('every emitted projection is byte-faithful to its source constant', async (
       JSON.parse(readFileSync(join(out, 'fold.vectors.json'), 'utf8')),
       foldVectors,
     );
-    assert.deepEqual(new Uint8Array(readFileSync(join(out, 'fold.wasm'))), moduleBytes());
-    assert.equal(readFileSync(join(out, 'money.sql'), 'utf8'), `${moneySql.trim()}\n`);
+    assert.deepEqual(
+      new Uint8Array(readFileSync(join(out, 'fold.wasm'))),
+      moduleBytes(),
+    );
+    assert.equal(
+      readFileSync(join(out, 'money.sql'), 'utf8'),
+      `${moneySql.trim()}\n`,
+    );
     const cli = readFileSync(join(out, 'money.mysql.sql'), 'utf8');
     for (const statement of moneyMysql) {
-      assert.ok(cli.includes(statement), 'mysql projection dropped a statement');
+      assert.ok(
+        cli.includes(statement),
+        'mysql projection dropped a statement',
+      );
     }
   } finally {
     rmSync(out, { recursive: true, force: true });

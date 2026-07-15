@@ -37,7 +37,10 @@ export const DB_VERSION = 1;
 
 /** The minimal slice of a database driver this file needs. Rows come back as objects. */
 export interface SqlRunner {
-  run(sql: string, params?: readonly unknown[]): Promise<Record<string, unknown>[]>;
+  run(
+    sql: string,
+    params?: readonly unknown[],
+  ): Promise<Record<string, unknown>[]>;
 }
 
 /** One conformance vector, structurally — pass `vectors` from '@pwngh/money'. */
@@ -393,18 +396,17 @@ const mysql: Engine = {
     return String(rows[0]?.['version']);
   },
   async div(db, num, den, mode) {
-    const rows = await db.run('select cast(money_div_round(?, ?, ?) as char) as r', [
-      num,
-      den,
-      mode,
-    ]);
+    const rows = await db.run(
+      'select cast(money_div_round(?, ?, ?) as char) as r',
+      [num, den, mode],
+    );
     return String(rows[0]?.['r']);
   },
   async bps(db, minor, bps) {
-    const rows = await db.run('select cast(money_split_bps(?, cast(? as json)) as char) as r', [
-      minor,
-      bps,
-    ]);
+    const rows = await db.run(
+      'select cast(money_split_bps(?, cast(? as json)) as char) as r',
+      [minor, bps],
+    );
     const parsed = JSON.parse(String(rows[0]?.['r'])) as {
       shares: string[];
       remainder: string;
@@ -422,7 +424,9 @@ async function prove(
   vectors: readonly Vector[],
 ): Promise<string[]> {
   const failures: string[] = [];
-  const version = await engine.version(db).catch((error: unknown) => `unreadable: ${error}`);
+  const version = await engine
+    .version(db)
+    .catch((error: unknown) => `unreadable: ${error}`);
   if (version !== String(DB_VERSION)) {
     failures.push(`meta version ${version}, package expects ${DB_VERSION}`);
     return failures;
@@ -443,10 +447,12 @@ async function prove(
       ran += 1;
       try {
         const got = await engine.div(db, num, den, mode);
-        if (want === 'throws') failures.push(`${JSON.stringify(v)} got ${got}, wanted raise`);
+        if (want === 'throws')
+          failures.push(`${JSON.stringify(v)} got ${got}, wanted raise`);
         else if (got !== want) failures.push(`${JSON.stringify(v)} got ${got}`);
       } catch (error) {
-        if (want !== 'throws') failures.push(`${JSON.stringify(v)} raised: ${error}`);
+        if (want !== 'throws')
+          failures.push(`${JSON.stringify(v)} raised: ${error}`);
       }
     } else if (kind === 'bps') {
       ran += 1;
@@ -454,14 +460,17 @@ async function prove(
         const got = await engine.bps(db, String(v[1]), JSON.stringify(v[2]));
         const want = (v[3] as readonly string[]).map(String);
         const conserves =
-          got.shares.reduce((sum, s) => sum + BigInt(s), 0n) + BigInt(got.remainder) ===
+          got.shares.reduce((sum, s) => sum + BigInt(s), 0n) +
+            BigInt(got.remainder) ===
           BigInt(String(v[1]));
         if (
           got.shares.length !== want.length ||
           got.shares.some((s, i) => s !== want[i]) ||
           got.remainder !== String(v[4])
         ) {
-          failures.push(`${JSON.stringify(v)} got ${got.shares} r ${got.remainder}`);
+          failures.push(
+            `${JSON.stringify(v)} got ${got.shares} r ${got.remainder}`,
+          );
         } else if (!conserves) {
           failures.push(`${JSON.stringify(v)} does not conserve`);
         }
@@ -478,7 +487,10 @@ async function prove(
  * Proves a live Postgres implements the semantics: returns failures, empty when
  * conformant. Assert empty at boot.
  */
-export function provePostgres(db: SqlRunner, vectors: readonly Vector[]): Promise<string[]> {
+export function provePostgres(
+  db: SqlRunner,
+  vectors: readonly Vector[],
+): Promise<string[]> {
   return prove(db, postgres, vectors);
 }
 
@@ -486,6 +498,9 @@ export function provePostgres(db: SqlRunner, vectors: readonly Vector[]): Promis
  * Proves a live MySQL implements the semantics: returns failures, empty when
  * conformant. Assert empty at boot.
  */
-export function proveMysql(db: SqlRunner, vectors: readonly Vector[]): Promise<string[]> {
+export function proveMysql(
+  db: SqlRunner,
+  vectors: readonly Vector[],
+): Promise<string[]> {
   return prove(db, mysql, vectors);
 }

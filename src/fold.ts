@@ -136,7 +136,8 @@ export function moduleBytes(): Uint8Array<ArrayBuffer> {
 export function foldRef(values: Iterable<bigint>): bigint {
   let sum = 0n;
   for (const value of values) {
-    if (value < I64_MIN || value > I64_MAX) throw new RangeError('i64 overflow');
+    if (value < I64_MIN || value > I64_MAX)
+      throw new RangeError('i64 overflow');
     sum += value;
     if (sum < I64_MIN || sum > I64_MAX) throw new RangeError('i64 overflow');
   }
@@ -155,7 +156,9 @@ export interface Fold {
  * earlier views, so take the view after sizing, not before.
  */
 export function createFold(): Fold {
-  const instance = new WebAssembly.Instance(new WebAssembly.Module(moduleBytes()));
+  const instance = new WebAssembly.Instance(
+    new WebAssembly.Module(moduleBytes()),
+  );
   const wasm = instance.exports as {
     memory: WebAssembly.Memory;
     fold(ptr: number, len: number): bigint;
@@ -177,7 +180,10 @@ export function createFold(): Fold {
     view,
     fold(values) {
       const count = values.length;
-      if (values instanceof BigInt64Array && values.buffer === wasm.memory.buffer) {
+      if (
+        values instanceof BigInt64Array &&
+        values.buffer === wasm.memory.buffer
+      ) {
         return run(values.byteOffset, count);
       }
       const target = view(count);
@@ -186,7 +192,8 @@ export function createFold(): Fold {
       } else {
         for (let i = 0; i < count; i += 1) {
           const value = values[i];
-          if (value < I64_MIN || value > I64_MAX) throw new RangeError('i64 overflow');
+          if (value < I64_MIN || value > I64_MAX)
+            throw new RangeError('i64 overflow');
           target[i] = value;
         }
       }
@@ -233,17 +240,21 @@ export function selfTest(): string[] {
       } catch {
         got = 'throws';
       }
-      if (got !== want) failures.push(`${label} fold(${values.join(',')}) got ${got}`);
+      if (got !== want)
+        failures.push(`${label} fold(${values.join(',')}) got ${got}`);
     }
   }
   let seed = 88172645463325252n;
   const random = folder.view(65_537);
   for (let i = 0; i < random.length; i += 1) {
-    seed = (seed * 6364136223846793005n + 1442695040888963407n) & 0xffffffffffffffffn;
+    seed =
+      (seed * 6364136223846793005n + 1442695040888963407n) &
+      0xffffffffffffffffn;
     random[i] = BigInt.asIntN(64, seed) >> 20n;
   }
   const fromRef = foldRef(random);
   const fromWasm = folder.fold(random);
-  if (fromRef !== fromWasm) failures.push(`cross-check: ref ${fromRef} wasm ${fromWasm}`);
+  if (fromRef !== fromWasm)
+    failures.push(`cross-check: ref ${fromRef} wasm ${fromWasm}`);
   return failures;
 }

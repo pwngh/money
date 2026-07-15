@@ -161,7 +161,12 @@ export function divRound(num: bigint, den: bigint, mode: Rounding): bigint {
  * vectors near I64_MAX exist to force other carriers into 128-bit arithmetic — and
  * only the result is range-checked.
  */
-export function mulDiv(value: bigint, num: bigint, den: bigint, mode: Rounding): bigint {
+export function mulDiv(
+  value: bigint,
+  num: bigint,
+  den: bigint,
+  mode: Rounding,
+): bigint {
   return divRound(value * num, den, mode);
 }
 
@@ -181,12 +186,21 @@ export interface Rate {
  * rounding mode is named at the call site; a non-positive denominator or negative
  * numerator is a broken premise and throws. The result is a range-checked Amount.
  */
-export function convert(a: Amount, to: string, r: Rate, mode: Rounding): Amount {
-  if (r.den <= 0n) throw new TypeError('convert: non-positive rate denominator');
+export function convert(
+  a: Amount,
+  to: string,
+  r: Rate,
+  mode: Rounding,
+): Amount {
+  if (r.den <= 0n)
+    throw new TypeError('convert: non-positive rate denominator');
   if (r.num < 0n) throw new TypeError('convert: negative rate numerator');
   const scaleTo = 10n ** BigInt(exponent(to));
   const scaleFrom = 10n ** BigInt(exponent(a.currency));
-  return amount(to, divRound(a.minor * r.num * scaleTo, r.den * scaleFrom, mode));
+  return amount(
+    to,
+    divRound(a.minor * r.num * scaleTo, r.den * scaleFrom, mode),
+  );
 }
 
 const WIRE = /^([A-Z]{3,12}):(0|-?[1-9][0-9]*)$/;
@@ -231,10 +245,14 @@ export function format(
   const group = options?.group ?? ',';
   const decimal = options?.decimal ?? '.';
   const sign = minor < 0n ? '-' : '';
-  const digits = (minor < 0n ? -minor : minor).toString().padStart(exp + 1, '0');
+  const digits = (minor < 0n ? -minor : minor)
+    .toString()
+    .padStart(exp + 1, '0');
   const whole = exp === 0 ? digits : digits.slice(0, -exp);
   const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, group);
-  return exp === 0 ? sign + grouped : sign + grouped + decimal + digits.slice(-exp);
+  return exp === 0
+    ? sign + grouped
+    : sign + grouped + decimal + digits.slice(-exp);
 }
 
 /**
@@ -247,7 +265,8 @@ export function parse(text: string, exp: number): bigint | null {
   const match = /^(-?)(\d+|\d{1,3}(?:,\d{3})+)(?:\.(\d+))?$/.exec(text);
   if (match === null) return null;
   const [, sign, wholeRaw, fraction] = match;
-  if (fraction !== undefined && (exp === 0 || fraction.length > exp)) return null;
+  if (fraction !== undefined && (exp === 0 || fraction.length > exp))
+    return null;
   const whole = wholeRaw.replaceAll(',', '');
   const scaled = BigInt(whole + (fraction ?? '').padEnd(exp, '0'));
   const minor = sign === '-' ? -scaled : scaled;
@@ -293,7 +312,8 @@ export function splitBps(
 ): { shares: bigint[]; remainder: bigint } {
   let totalBps = 0;
   for (const share of bps) {
-    if (!Number.isInteger(share) || share < 0) throw new TypeError('splitBps: bad bps');
+    if (!Number.isInteger(share) || share < 0)
+      throw new TypeError('splitBps: bad bps');
     totalBps += share;
   }
   if (totalBps > 10_000) throw new TypeError('splitBps: bps exceed 10000');
@@ -315,7 +335,16 @@ export type Vector =
   | readonly ['mul', string, string, string | 'throws']
   | readonly ['div', string, string, Rounding, string | 'throws']
   | readonly ['muldiv', string, string, string, Rounding, string | 'throws']
-  | readonly ['conv', string, string, string, string, string, Rounding, string | 'throws']
+  | readonly [
+      'conv',
+      string,
+      string,
+      string,
+      string,
+      string,
+      Rounding,
+      string | 'throws',
+    ]
   | readonly ['enc', string, string, string | 'throws']
   | readonly ['dec', string, string | null]
   | readonly ['alloc', string, readonly string[], readonly string[] | 'throws']
@@ -447,7 +476,14 @@ export const vectors: readonly Vector[] = [
   ['div', '-1', '2', 'halfUp', '-1'],
   ['div', '7', '3', 'halfUp', '2'],
 
-  ['muldiv', '9223372036854775807', '10000', '10000', 'floor', '9223372036854775807'],
+  [
+    'muldiv',
+    '9223372036854775807',
+    '10000',
+    '10000',
+    'floor',
+    '9223372036854775807',
+  ],
   ['muldiv', '12345', '250', '10000', 'floor', '308'],
   ['muldiv', '12345', '250', '10000', 'ceil', '309'],
   ['muldiv', '12345', '250', '10000', 'halfEven', '309'],
@@ -493,7 +529,12 @@ export const vectors: readonly Vector[] = [
   ['alloc', '-100', ['1', '1', '1'], ['-34', '-33', '-33']],
   ['alloc', '0', ['1', '2'], ['0', '0']],
   ['alloc', '7', ['0', '1'], ['0', '7']],
-  ['alloc', '5', ['1', '1', '1', '1', '1', '1'], ['1', '1', '1', '1', '1', '0']],
+  [
+    'alloc',
+    '5',
+    ['1', '1', '1', '1', '1', '1'],
+    ['1', '1', '1', '1', '1', '0'],
+  ],
   ['alloc', '100', [], 'throws'],
   ['alloc', '100', ['0', '0'], 'throws'],
   ['alloc', '100', ['-1', '2'], 'throws'],
@@ -532,7 +573,8 @@ export function selfTest(): string[] {
       const want = v[3] === null ? null : BigInt(v[3]);
       if (got !== want) fail(v, got);
     } else if (v[0] === 'format') {
-      const options = v[4] === undefined ? undefined : { group: v[4][0], decimal: v[4][1] };
+      const options =
+        v[4] === undefined ? undefined : { group: v[4][0], decimal: v[4][1] };
       const got = format(BigInt(v[1]), v[2], options);
       if (got !== v[3]) fail(v, got);
     } else if (v[0] === 'add' || v[0] === 'mul') {
@@ -584,7 +626,8 @@ export function selfTest(): string[] {
         const got = run();
         const want = v[3].map(BigInt);
         const sum = got.reduce((s, x) => s + x, 0n);
-        if (got.length !== want.length || got.some((x, i) => x !== want[i])) fail(v, got);
+        if (got.length !== want.length || got.some((x, i) => x !== want[i]))
+          fail(v, got);
         else if (sum !== BigInt(v[1])) fail(v, `sum ${sum}`);
       }
     } else if (v[0] === 'div' || v[0] === 'muldiv') {
@@ -626,10 +669,18 @@ export function prove(): string[] {
   const failures: string[] = [];
   let seed = 6364136223846793005n;
   const next = (): bigint => {
-    seed = (seed * 6364136223846793005n + 1442695040888963407n) & 0xffffffffffffffffn;
+    seed =
+      (seed * 6364136223846793005n + 1442695040888963407n) &
+      0xffffffffffffffffn;
     return BigInt.asIntN(64, seed);
   };
-  const modes: readonly Rounding[] = ['floor', 'ceil', 'trunc', 'halfEven', 'halfUp'];
+  const modes: readonly Rounding[] = [
+    'floor',
+    'ceil',
+    'trunc',
+    'halfEven',
+    'halfUp',
+  ];
   const exponents = [0, 2, 3, 4] as const;
   for (let i = 0; i < 500; i += 1) {
     const minor = i % 3 === 0 ? next() : next() >> 20n;
@@ -642,7 +693,11 @@ export function prove(): string[] {
       failures.push(`wire ${minor}`);
     }
     const small = next() >> 20n;
-    const weights = [1n + (next() & 1023n), next() & 1023n, 1n + (next() & 1023n)];
+    const weights = [
+      1n + (next() & 1023n),
+      next() & 1023n,
+      1n + (next() & 1023n),
+    ];
     const shares = allocate(small, weights);
     if (shares.reduce((sum, share) => sum + share, 0n) !== small) {
       failures.push(`allocate ${small}`);

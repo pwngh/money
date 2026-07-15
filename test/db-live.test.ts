@@ -22,7 +22,12 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { installMysql, installPostgres, proveMysql, provePostgres } from '@pwngh/money/db';
+import {
+  installMysql,
+  installPostgres,
+  proveMysql,
+  provePostgres,
+} from '@pwngh/money/db';
 import { vectors } from '@pwngh/money';
 
 import type { SqlRunner } from '@pwngh/money/db';
@@ -78,7 +83,10 @@ if (mysqlUrl) {
 }
 
 interface PoolLike {
-  query(sql: string, params?: unknown[]): Promise<{ rows: Record<string, unknown>[] }>;
+  query(
+    sql: string,
+    params?: unknown[],
+  ): Promise<{ rows: Record<string, unknown>[] }>;
   end(): Promise<void>;
 }
 
