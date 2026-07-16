@@ -1,0 +1,37 @@
+# Publishes the package to npm with provenance attestation. Manual trigger only: a release is a
+# deliberate act, and the commit must already carry its version tag.
+name: publish
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # Full history brings the tags the version-tag gate below reads.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      # The whole gate: typecheck, lint, format, and the suite (prepack only rebuilds dist).
+      - run: npm run check
+      # Refuse to publish a commit that does not carry its own version tag.
+      - run: git tag --points-at HEAD | grep -qx "v$(node -p "require('./package.json').version")"
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
